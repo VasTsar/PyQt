@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow
 
 
 class Slide:
+    '''Формирурет диалоговое окно'''
     def __init__(self, text):
         self.text = text
         self.dialog = QInputDialog
@@ -24,6 +25,7 @@ class Game(QMainWindow):
         self.pushWelcome.clicked.connect(self.get_result)
 
     def get_result(self):
+        '''"Вытаскивает" нужный текст из таблицы'''
         con = sqlite3.connect('project')
         cur = con.cursor()
         text_screen = cur.execute("""SELECT text FROM Screens
@@ -35,6 +37,7 @@ class Game(QMainWindow):
         WHERE screen_id = ?""", (self.current_id,)).fetchall()
 
     def write(self, text_screen, text_choices):
+        '''Записывает текст в диалоговое окно'''
         pass
 
 
