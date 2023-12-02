@@ -23,28 +23,29 @@ class Game(QMainWindow):
         uic.loadUi('welcome1.ui', self)
         self.current_id = 1
         self.pushWelcome.clicked.connect(self.get_result)
+        self.text_screen = ''
+        self.text_choices = []
 
     def get_result(self):
         '''"Вытаскивает" нужный текст из таблицы'''
         con = sqlite3.connect('project')
         cur = con.cursor()
-        print(cur.execute('''SELECT * FROM Screens''').fetchall())
-        text_screen = cur.execute("""SELECT text FROM Screens
+        self.text_screen = cur.execute("""SELECT text FROM Screens
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
         #text_choices = cur.execute("""SELECT text FROM Choices
         #WHERE Choices.screen_id == Screens.id""").fetchall()
-        self.slide_text.setText(text_screen)
-        text_choices = cur.execute("""SELECT text FROM Choices
+        self.slide_text.setText(self.text_screen)
+        self.text_choices = cur.execute("""SELECT text FROM Choices
         WHERE screen_id = ?""", (self.current_id,)).fetchall()
         self.pushWelcome.setText('Продолжить')
         self.pushWelcome.clicked.connect(self.write)
 
-    def write(self, text_screen, text_choices):
+    def write(self):
         '''Записывает текст в диалоговое окно'''
         name, ok_pressed = QInputDialog.getText(self, "Введите имя",
-                                                text_choices)
+                                                self.text_choices)
         if ok_pressed:
-            self.textBrowser.setText(text_screen)
+            self.textBrowser.setText(self.text_screen)
 
 
 def except_hook(cls, exception, traceback):
