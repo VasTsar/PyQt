@@ -28,6 +28,7 @@ class Game(QMainWindow):
         '''"Вытаскивает" нужный текст из таблицы'''
         con = sqlite3.connect('project')
         cur = con.cursor()
+        print(cur.execute('''SELECT * FROM Screens''').fetchall())
         text_screen = cur.execute("""SELECT text FROM Screens
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
         #text_choices = cur.execute("""SELECT text FROM Choices
