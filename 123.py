@@ -35,10 +35,15 @@ class Game(QMainWindow):
         self.slide_text.setText(text_screen)
         text_choices = cur.execute("""SELECT text FROM Choices
         WHERE screen_id = ?""", (self.current_id,)).fetchall()
+        self.pushWelcome.setText('Продолжить')
+        self.pushWelcome.clicked.connect(self.write)
 
     def write(self, text_screen, text_choices):
         '''Записывает текст в диалоговое окно'''
-        pass
+        name, ok_pressed = QInputDialog.getText(self, "Введите имя",
+                                                text_choices)
+        if ok_pressed:
+            self.textBrowser.setText(text_screen)
 
 
 def except_hook(cls, exception, traceback):
