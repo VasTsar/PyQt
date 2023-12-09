@@ -47,6 +47,10 @@ class Game(QMainWindow):
         if ok_pressed:
             self.textBrowser.setText(self.text_screen)
 
+    def correct_answer(self):
+        '''Проверяет правильность ответов в задачах со счетом'''
+        pass
+
 
 def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
