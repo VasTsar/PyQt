@@ -25,11 +25,11 @@ class Game(QMainWindow):
         self.pushWelcome.clicked.connect(self.get_result)
         self.text_screen = ''
         self.text_choices = []
+        self.con = sqlite3.connect('project.sqlite')
 
     def get_result(self):
         '''"Вытаскивает" нужный текст из таблицы'''
-        con = sqlite3.connect('project')
-        cur = con.cursor()
+        cur = self.con.cursor()
         self.text_screen = cur.execute("""SELECT text FROM Screens
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
         #text_choices = cur.execute("""SELECT text FROM Choices
@@ -37,19 +37,27 @@ class Game(QMainWindow):
         self.slide_text.setText(self.text_screen)
         self.text_choices = cur.execute("""SELECT text FROM Choices
         WHERE screen_id = ?""", (self.current_id,)).fetchall()
+        self.text_choices = list(map(lambda x: x[0], self.text_choices))
         self.pushWelcome.setText('Продолжить')
         self.pushWelcome.clicked.connect(self.write)
 
     def write(self):
         '''Записывает текст в диалоговое окно'''
-        name, ok_pressed = QInputDialog.getText(self, "Введите имя",
-                                                self.text_choices)
+        text, ok_pressed = QInputDialog().getText(self, "Введите имя", *self.text_choices)
         if ok_pressed:
-            self.textBrowser.setText(self.text_screen)
+            if self.correct_answer():
+                self.textBrowser.setText(self.text_screen)
+
+
 
     def correct_answer(self):
         '''Проверяет правильность ответов в задачах со счетом'''
-        pass
+        cur = self.con.cursor()
+        print(self.current_id)
+        correct = cur.execute("""SELECT answer FROM Answers 
+        WHERE id = ?""", (self.current_id,)).fetchone()[0]
+        if self.text != correct:
+            self.textBrowser.setText('Возможно, Вы промазали по нужной клавише. Попытайтесь ещё раз')
 
 
 def except_hook(cls, exception, traceback):
