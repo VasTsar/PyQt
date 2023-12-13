@@ -7,15 +7,9 @@ from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow
 
 
 class Slide:
-    '''Формирурет диалоговое окно'''
-
-    def __init__(self, text):
-        self.text = text
+    def __init__(self):
+        self.text = input()
         self.dialog = QInputDialog
-
-    def draw_screen(self):
-        self.label = QtWidgets.QLabel()
-        self.label.setGeometry(QtCore.QRect(141, 20, 190, 80))
 
 
 class Game(QMainWindow):
@@ -33,8 +27,6 @@ class Game(QMainWindow):
         cur = self.con.cursor()
         self.text_screen = cur.execute("""SELECT text FROM Screens
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
-        # text_choices = cur.execute("""SELECT text FROM Choices
-        # WHERE Choices.screen_id == Screens.id""").fetchall()
         self.slide_text.setText(self.text_screen)
         self.text_choices = cur.execute("""SELECT text FROM Choices
         WHERE screen_id = ?""", (self.current_id,)).fetchall()
@@ -42,11 +34,23 @@ class Game(QMainWindow):
         self.pushWelcome.setText('Продолжить')
         self.pushWelcome.clicked.connect(self.write)
 
+    def correct_answer(self):
+        '''Проверяет правильность ответов в задачах со счетом'''
+        cur = self.con.cursor()
+        correct = cur.execute("""SELECT answer FROM Answers 
+        WHERE id = ?""", (self.current_id,)).fetchone()[0]
+        if self.text == '' or self.text != correct:
+            self.textBrowser.setText('Возможно, Вы промазали по нужной клавише. Попытайтесь ещё раз')
+
     def write(self):
         '''Записывает текст в диалоговое окно'''
+        cur = self.con.cursor()
         text, ok_pressed = QInputDialog().getText(self, "Введите имя", *self.text_choices)
+        type_choice = cur.execute("""SELECT type_choice FROM Choices
+        WHERE id = ?""", (self.current_id,)).fetchone()[0]
         if ok_pressed:
-            if self.correct_answer():
+            if type_choice == 'input':
+                self.correct_answer()
                 self.textBrowser.setText(self.text_screen)
 
     def correct_answer(self):
@@ -57,6 +61,11 @@ class Game(QMainWindow):
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
         if self.text != correct:
             self.textBrowser.setText('Возможно, Вы промазали по нужной клавише. Попытайтесь ещё раз')
+
+    def insert_statistics(self):
+        '''Добавляет номер игрока, время и концовку в таблицу'''
+        statistics_insert_statistics = '''INSERT INTO Statistics (time,end) VALUES(time_, end_)'''
+        # time_ - время / end_ - номер концовки
 
 
 def except_hook(cls, exception, traceback):
