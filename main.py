@@ -10,7 +10,7 @@ class Slide:
     '''Формирурет диалоговое окно'''
 
     def __init__(self, text):
-        self.text = text
+        # self.text = text
         self.dialog = QInputDialog
 
     def draw_screen(self):

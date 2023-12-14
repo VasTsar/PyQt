@@ -8,8 +8,11 @@ from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow
 
 class Slide:
     def __init__(self):
-        self.text = input()
         self.dialog = QInputDialog
+
+    def draw_screen(self):
+        self.label = QtWidgets.QLabel()
+        self.label.setGeometry(QtCore.QRect(141, 20, 190, 80))
 
 
 class Game(QMainWindow):
@@ -34,29 +37,26 @@ class Game(QMainWindow):
         self.pushWelcome.setText('Продолжить')
         self.pushWelcome.clicked.connect(self.write)
 
+    def write(self):
+        '''Записывает текст в диалоговое окно'''
+        cur = self.con.cursor()
+        text, ok_pressed = QInputDialog().getInt(self, "Введите имя", *self.text_choices)
+        type_choice = cur.execute("""SELECT type_choice FROM Choices
+        WHERE id = ?""", (self.current_id,)).fetchone()[0]
+        if ok_pressed:
+            self.textBrowser.setText(self.text_screen)
+
     def correct_answer(self):
         '''Проверяет правильность ответов в задачах со счетом'''
         cur = self.con.cursor()
         correct = cur.execute("""SELECT answer FROM Answers 
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
-        if self.text == '' or self.text != correct:
+        if self.text != int(correct):
             self.textBrowser.setText('Возможно, Вы промазали по нужной клавише. Попытайтесь ещё раз')
-
-    def write(self):
-        '''Записывает текст в диалоговое окно'''
-        cur = self.con.cursor()
-        text, ok_pressed = QInputDialog().getText(self, "Введите имя", *self.text_choices)
-        type_choice = cur.execute("""SELECT type_choice FROM Choices
-        WHERE id = ?""", (self.current_id,)).fetchone()[0]
-        if ok_pressed:
-            if type_choice == 'input':
-                self.correct_answer()
-                self.textBrowser.setText(self.text_screen)
 
     def correct_answer(self):
         '''Проверяет правильность ответов в задачах со счетом'''
         cur = self.con.cursor()
-        print(self.current_id)
         correct = cur.execute("""SELECT answer FROM Answers 
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
         if self.text != correct:
