@@ -3,7 +3,7 @@ import sqlite3
 
 from PyQt5 import uic
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow
+from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
 from datetime import datetime
 
 
@@ -14,24 +14,41 @@ class Game(QMainWindow):
         self.current_id = 1
         self.pushWelcome.clicked.connect(self.get_result)
         self.text_screen = ''
-        self.text_choices = []
+        self.text_slide = []
+        self.text_button = []
+        self.next_slides_id = []
+        self.slide = None
         self.con = sqlite3.connect('project.sqlite')
-        #self.start_time = datetime.now.time()
+        self.clickable = True
+        self.additional_text = ''
+        # self.start_time = datetime.now.time()
+        # self.end_time = 0
 
     def get_result(self):
         '''"Вытаскивает" нужный текст из таблицы'''
         cur = self.con.cursor()
-        self.text_screen = cur.execute("""SELECT text FROM Screens
+        self.text_screen = self.additional_text + '\n' + cur.execute("""SELECT text FROM Screens
         WHERE id = ?""", (self.current_id,)).fetchone()[0]
         self.slide_text.setText(self.text_screen)
-        self.text_choices = cur.execute("""SELECT text FROM Choices
-        WHERE screen_id = ?""", (self.current_id,)).fetchall()
-        self.text_choices = list(map(lambda x: x[0], self.text_choices))
+        self.text_slide = cur.execute("""SELECT text FROM Choices
+        WHERE screen_id = ?""", (self.current_id,)).fetchone()[0]
+        self.text_button = cur.execute("""SELECT text, next_screen FROM Buttons
+        WHERE choice_id = ?""", (self.current_id,)).fetchall()
+        self.text_button, self.next_slides_id = (list(map(lambda x: x[0], self.text_button)),
+                                                 list(map(lambda x: x[1], self.text_button)))
         self.pushWelcome.setText('Продолжить')
         self.pushWelcome.clicked.connect(self.write)
 
     def write(self):
         '''Записывает текст в диалоговое окно'''
+        if self.clickable:
+            self.slide = Slide(text_slide=self.text_slide,
+                               text_button=self.text_button,
+                               next_slides_id=self.next_slides_id,
+                               game=self)
+            self.slide.show()
+            self.clickable = False
+
         '''cur = self.con.cursor()
         text, ok_pressed = QInputDialog().getInt(self, "Введите имя", *self.text_choices)
         if ok_pressed:
@@ -44,16 +61,30 @@ class Game(QMainWindow):
         # time_ - время / end_ - номер концовки
 
 
-class Slide(Game):
-    def __init__(self, parent=None, text_choices=None, text_screen=None, end1='final1.png', end2='final2.png'):
-        super().__init__(parent)
+class Slide(QDialog):
+    def __init__(self, text_slide, text_button, next_slides_id, game):
+        super().__init__()
         uic.loadUi('dialog.ui', self)
-        self.label.setText(self.text_screen)
-        self.PushButton_1.set.Text(self.text_choices[0])
-        self.PushButton_2.set.Text(self.text_choices[1])
+        self.text_slide = text_slide
+        self.text_button = text_button
+        self.next_slides_id = next_slides_id
+        self.game = game
+        self.label.setText(self.text_slide)
+        self.push_button_1.setText(self.text_button[0])
+        self.push_button_2.setText(self.text_button[1])
 
         # self.pixmap = QPixmap(image)
         # self.label.setPixmap(self.pixmap)
+
+        for num, button in enumerate([self.push_button_1, self.push_button_2]):
+            button.clicked.connect(self.make_choice(num))
+
+    def make_choice(self, num):
+        def press_info():
+            self.hide()
+            self.game.current_id = self.next_slides_id[num]
+            self.game.clickable = True
+        return press_info
 
     def draw_screen(self):
         '''Рисует экран'''
