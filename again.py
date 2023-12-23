@@ -4,15 +4,7 @@ import sqlite3
 from PyQt5 import uic
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QApplication, QInputDialog, QMainWindow
-
-
-class Slide:
-    def __init__(self):
-        self.dialog = QInputDialog
-
-    def draw_screen(self):
-        self.label = QtWidgets.QLabel()
-        self.label.setGeometry(QtCore.QRect(141, 20, 190, 80))
+from datetime import datetime
 
 
 class Game(QMainWindow):
@@ -24,6 +16,7 @@ class Game(QMainWindow):
         self.text_screen = ''
         self.text_choices = []
         self.con = sqlite3.connect('project.sqlite')
+        #self.start_time = datetime.now.time()
 
     def get_result(self):
         '''"Вытаскивает" нужный текст из таблицы'''
@@ -39,33 +32,32 @@ class Game(QMainWindow):
 
     def write(self):
         '''Записывает текст в диалоговое окно'''
-        cur = self.con.cursor()
+        '''cur = self.con.cursor()
         text, ok_pressed = QInputDialog().getInt(self, "Введите имя", *self.text_choices)
-        type_choice = cur.execute("""SELECT type_choice FROM Choices
-        WHERE id = ?""", (self.current_id,)).fetchone()[0]
         if ok_pressed:
-            self.textBrowser.setText(self.text_screen)
-
-    def correct_answer(self):
-        '''Проверяет правильность ответов в задачах со счетом'''
-        cur = self.con.cursor()
-        correct = cur.execute("""SELECT answer FROM Answers 
-        WHERE id = ?""", (self.current_id,)).fetchone()[0]
-        if self.text != int(correct):
-            self.textBrowser.setText('Возможно, Вы промазали по нужной клавише. Попытайтесь ещё раз')
-
-    def correct_answer(self):
-        '''Проверяет правильность ответов в задачах со счетом'''
-        cur = self.con.cursor()
-        correct = cur.execute("""SELECT answer FROM Answers 
-        WHERE id = ?""", (self.current_id,)).fetchone()[0]
-        if self.text != correct:
-            self.textBrowser.setText('Возможно, Вы промазали по нужной клавише. Попытайтесь ещё раз')
+            self.textBrowser.setText(self.text_screen)'''
 
     def insert_statistics(self):
         '''Добавляет номер игрока, время и концовку в таблицу'''
-        statistics_insert_statistics = '''INSERT INTO Statistics (time,end) VALUES(time_, end_)'''
+        #self.time_ = datetime.now().time - self.start_time
+        statistics_insert_statistics = '''INSERT INTO Statistics (time,end) VALUES(self.time_, self.end_)'''
         # time_ - время / end_ - номер концовки
+
+
+class Slide(Game):
+    def __init__(self, parent=None, text_choices=None, text_screen=None, end1='final1.png', end2='final2.png'):
+        super().__init__(parent)
+        uic.loadUi('dialog.ui', self)
+        self.label.setText(self.text_screen)
+        self.PushButton_1.set.Text(self.text_choices[0])
+        self.PushButton_2.set.Text(self.text_choices[1])
+
+        # self.pixmap = QPixmap(image)
+        # self.label.setPixmap(self.pixmap)
+
+    def draw_screen(self):
+        '''Рисует экран'''
+        pass
 
 
 def except_hook(cls, exception, traceback):
