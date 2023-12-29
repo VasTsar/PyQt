@@ -87,7 +87,6 @@ class Slide(QDialog):
             """ Меняет текущее айди, добавляет дополнительный текст (если он есть) """
             self.hide()
             self.game.current_id = self.next_slides_id[num]
-            print(self.game.current_id)
             if self.game.current_id == 10:
                 self.final_game('final1.png')
             elif self.game.current_id == 11:
