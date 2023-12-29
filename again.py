@@ -2,9 +2,9 @@ import sys
 import sqlite3
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow, QLabel
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QApplication, QDialog, QMainWindow
 from datetime import datetime
+import os
 
 
 class Game(QMainWindow):
@@ -22,6 +22,8 @@ class Game(QMainWindow):
         self.clickable = True
         self.additional_text = ''
         self.start_time = datetime.now().time()
+        self.time_ = 0
+        self.end_ = 0
 
     def get_result(self):
         """'Вытаскивает' нужный текст из таблицы"""
@@ -54,10 +56,13 @@ class Game(QMainWindow):
             чтобы избежать повторения одинаковых диалоговых окон'''
 
     def insert_statistics(self):
-        """ Добавляет номер игрока, время и концовку в таблицу """
-        # self.time_ = datetime.now().time - self.start_time
-        statistics_insert_statistics = '''INSERT INTO Statistics (time,end) VALUES(self.time_, self.end_)'''
-        # time_ - время / end_ - номер концовки
+        """ Добавляет номер игрока, время и концовку в таблицу
+            time_ - время / end_ - номер концовки"""
+        cur = self.con.cursor()
+        self.time_ = datetime.now().time - self.start_time
+        self.end_ = self.current_id % 9
+        self.statistics_insert_statistics = cur.execute('''INSERT INTO Statistics (time,end)
+         VALUES(self.time_, self.end_)''')
 
 
 class Slide(QDialog):
@@ -82,11 +87,11 @@ class Slide(QDialog):
             """ Меняет текущее айди, добавляет дополнительный текст (если он есть) """
             self.hide()
             self.game.current_id = self.next_slides_id[num]
+            print(self.game.current_id)
             if self.game.current_id == 10:
-                if num == 1:
-                    self.final_game('final1.png')
-                else:
-                    self.final_game('final2.png')
+                self.final_game('final1.png')
+            elif self.game.current_id == 11:
+                self.final_game('final2.png')
             self.game.clickable = True
             if self.additional_texts[num]:
                 self.game.additional_text = self.additional_texts[num] + '\n'
@@ -97,11 +102,7 @@ class Slide(QDialog):
 
     def final_game(self, file_name):
         """ Выводит финальную картинку """
-        self.pixmap = QPixmap(file_name)
-        self.image = QLabel(self)
-        # self.image.move(0, 0)
-        # self.image.resize(2667, 1500)
-        self.image.setPixmap(self.pixmap)
+        os.system(file_name)
 
 
 def except_hook(cls, exception, traceback):
