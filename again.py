@@ -59,9 +59,9 @@ class Game(QMainWindow):
         """ Добавляет номер игрока, время и концовку в таблицу
             time_ - время / end_ - номер концовки"""
         cur = self.con.cursor()
-        self.time_ = datetime.now().time - self.start_time
+        self.time_ = int(datetime.now().time) - (self.start_time)
         self.end_ = self.current_id % 9
-        self.statistics_insert_statistics = cur.execute('''INSERT INTO Statistics (time,end)
+        self.statistics_insert_statistics = cur.execute('''INSERT INTO Statistics(time,end)
          VALUES(self.time_, self.end_)''')
 
 
